@@ -12,6 +12,8 @@ public class ProtocolConstants
     public static final int MINECRAFT_1_9_2 = 109;
     public static final int MINECRAFT_1_9_4 = 110;
     public static final int MINECRAFT_1_10 = 210;
+    public static final int MINECRAFT_1_11_SNAP = 314;
+    public static final int MINECRAFT_1_11 = 315;
     public static final List<String> SUPPORTED_VERSIONS = Arrays.asList(
             "1.8.x",
             "1.9.x",
@@ -22,7 +24,10 @@ public class ProtocolConstants
             ProtocolConstants.MINECRAFT_1_9_1,
             ProtocolConstants.MINECRAFT_1_9_2,
             ProtocolConstants.MINECRAFT_1_9_4,
-            ProtocolConstants.MINECRAFT_1_10
+            ProtocolConstants.MINECRAFT_1_10,
+            ProtocolConstants.MINECRAFT_1_11_SNAP,
+            ProtocolConstants.MINECRAFT_1_11
+
     );
 
     public enum Direction

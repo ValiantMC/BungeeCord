@@ -28,7 +28,13 @@ public class Title extends DefinedPacket
     @Override
     public void read(ByteBuf buf, ProtocolConstants.Direction direction, int protocolVersion)
     {
-        action = Action.values()[readVarInt( buf )];
+        if (protocolVersion >= ProtocolConstants.MINECRAFT_1_11_SNAP) {
+            int x = readVarInt(buf);
+            if(x >= 2) x = x - 1; // action becomes subtitle
+            action = Action.values()[x];
+        } else {
+            action = Action.values()[readVarInt(buf)];
+        }
         switch ( action )
         {
             case TITLE:
@@ -46,7 +52,16 @@ public class Title extends DefinedPacket
     @Override
     public void write(ByteBuf buf, ProtocolConstants.Direction direction, int protocolVersion)
     {
-        writeVarInt( action.ordinal(), buf );
+        if (protocolVersion >= ProtocolConstants.MINECRAFT_1_11_SNAP) {
+            if(action.ordinal() >= 2) {
+                writeVarInt(action.ordinal() + 1, buf);
+            } else{
+                writeVarInt(action.ordinal(), buf);
+            }
+        } else {
+            writeVarInt( action.ordinal(), buf );
+        }
+
         switch ( action )
         {
             case TITLE:
