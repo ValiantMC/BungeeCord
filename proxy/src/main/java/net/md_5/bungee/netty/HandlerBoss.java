@@ -1,11 +1,10 @@
 package net.md_5.bungee.netty;
 
-import net.md_5.bungee.protocol.PacketWrapper;
 import com.google.common.base.Preconditions;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.ChannelInboundHandlerAdapter;
-import io.netty.handler.timeout.ReadTimeoutException;
 import io.netty.handler.codec.DecoderException;
+import io.netty.handler.timeout.ReadTimeoutException;
 import java.io.IOException;
 import java.util.logging.Level;
 import net.md_5.bungee.api.ProxyServer;
@@ -13,6 +12,8 @@ import net.md_5.bungee.connection.CancelSendSignal;
 import net.md_5.bungee.connection.InitialHandler;
 import net.md_5.bungee.connection.PingHandler;
 import net.md_5.bungee.protocol.BadPacketException;
+import net.md_5.bungee.protocol.OverflowPacketException;
+import net.md_5.bungee.protocol.PacketWrapper;
 
 /**
  * This class is a primitive wrapper for {@link PacketHandler} instances tied to
@@ -104,11 +105,17 @@ public class HandlerBoss extends ChannelInboundHandlerAdapter
                 {
                     handler, cause.getCause().getMessage()
                 } );
-            } else if ( cause instanceof IOException )
+            } else if ( cause instanceof DecoderException && cause.getCause() instanceof OverflowPacketException )
             {
-                ProxyServer.getInstance().getLogger().log( Level.WARNING, "{0} - IOException: {1}", new Object[]
+                ProxyServer.getInstance().getLogger().log( Level.WARNING, "{0} - overflow in packet detected! {1}", new Object[]
                 {
-                    handler, cause.getMessage()
+                    handler, cause.getCause().getMessage()
+                } );
+            } else if ( cause instanceof IOException || ( cause instanceof IllegalStateException && handler instanceof InitialHandler ) )
+            {
+                ProxyServer.getInstance().getLogger().log( Level.WARNING, "{0} - {1}: {2}", new Object[]
+                {
+                    handler, cause.getClass().getSimpleName(), cause.getMessage()
                 } );
             } else
             {

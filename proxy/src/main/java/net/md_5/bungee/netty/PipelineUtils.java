@@ -19,7 +19,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.timeout.ReadTimeoutHandler;
 import io.netty.util.AttributeKey;
 import io.netty.util.internal.PlatformDependent;
-import java.net.InetSocketAddress;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
@@ -41,9 +40,9 @@ import net.md_5.bungee.protocol.Varint21LengthFieldPrepender;
 public class PipelineUtils
 {
 
-    public static final AttributeKey<ListenerInfo> LISTENER = new AttributeKey<>( "ListerInfo" );
-    public static final AttributeKey<UserConnection> USER = new AttributeKey<>( "User" );
-    public static final AttributeKey<BungeeServerInfo> TARGET = new AttributeKey<>( "Target" );
+    public static final AttributeKey<ListenerInfo> LISTENER = AttributeKey.valueOf( "ListerInfo" );
+    public static final AttributeKey<UserConnection> USER = AttributeKey.valueOf( "User" );
+    public static final AttributeKey<BungeeServerInfo> TARGET = AttributeKey.valueOf( "Target" );
     public static final ChannelInitializer<Channel> SERVER_CHILD = new ChannelInitializer<Channel>()
     {
         @Override

@@ -3,7 +3,6 @@ package net.md_5.bungee;
 import com.google.common.base.Preconditions;
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.ByteBufAllocator;
-
 import java.util.Queue;
 import java.util.Set;
 import java.util.UUID;
@@ -30,7 +29,6 @@ import net.md_5.bungee.netty.HandlerBoss;
 import net.md_5.bungee.netty.PacketHandler;
 import net.md_5.bungee.protocol.DefinedPacket;
 import net.md_5.bungee.protocol.Protocol;
-import net.md_5.bungee.protocol.packet.BossBar;
 import net.md_5.bungee.protocol.packet.EncryptionRequest;
 import net.md_5.bungee.protocol.packet.Handshake;
 import net.md_5.bungee.protocol.packet.Kick;
@@ -170,7 +168,7 @@ public class ServerConnector extends PacketHandler
             }
         }
 
-        for ( PluginMessage message : user.getPendingConnection().getRegisterMessages() )
+        for ( PluginMessage message : user.getPendingConnection().getRelayMessages() )
         {
             ch.write( message );
         }
@@ -199,8 +197,10 @@ public class ServerConnector extends PacketHandler
 
             ByteBuf brand = ByteBufAllocator.DEFAULT.heapBuffer();
             DefinedPacket.writeString( bungee.getName() + " (" + bungee.getVersion() + ")", brand );
-            user.unsafe().sendPacket( new PluginMessage( "MC|Brand", brand.array().clone(), handshakeHandler.isServerForge() ) );
+            user.unsafe().sendPacket( new PluginMessage( "MC|Brand", DefinedPacket.toArray( brand ), handshakeHandler.isServerForge() ) );
             brand.release();
+
+            user.setDimension( login.getDimension() );
         } else
         {
             user.getServer().setObsolete( true );
@@ -224,10 +224,15 @@ public class ServerConnector extends PacketHandler
             }
             user.getSentBossBars().clear();
 
-            user.sendDimensionSwitch();
+            user.setDimensionChange( true );
+            if ( login.getDimension() == user.getDimension() )
+            {
+                user.unsafe().sendPacket( new Respawn( ( login.getDimension() >= 0 ? -1 : 0 ), login.getDifficulty(), login.getGameMode(), login.getLevelType() ) );
+            }
 
             user.setServerEntityId( login.getEntityId() );
             user.unsafe().sendPacket( new Respawn( login.getDimension(), login.getDifficulty(), login.getGameMode(), login.getLevelType() ) );
+            user.setDimension( login.getDimension() );
 
             // Remove from old servers
             user.getServer().disconnect( "Quitting" );

@@ -1,6 +1,7 @@
 package net.md_5.bungee.protocol;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
@@ -128,8 +129,8 @@ public enum Protocol
                     PlayerListHeaderFooter.class,
                     map( ProtocolConstants.MINECRAFT_1_8, 0x47 ),
                     map( ProtocolConstants.MINECRAFT_1_9, 0x48 ),
-                    map(ProtocolConstants.MINECRAFT_1_9_4, 0x47 ),
-                    map(ProtocolConstants.MINECRAFT_1_10, 0x47 )
+                    map( ProtocolConstants.MINECRAFT_1_9_4, 0x47 ),
+                    map( ProtocolConstants.MINECRAFT_1_10, 0x47 )
             );
 
             TO_SERVER.registerPacket(
@@ -218,8 +219,8 @@ public enum Protocol
     /*========================================================================*/
     public static final int MAX_PACKET_ID = 0xFF;
     /*========================================================================*/
-    public final DirectionData TO_SERVER = new DirectionData( ProtocolConstants.Direction.TO_SERVER );
-    public final DirectionData TO_CLIENT = new DirectionData( ProtocolConstants.Direction.TO_CLIENT );
+    public final DirectionData TO_SERVER = new DirectionData(this, ProtocolConstants.Direction.TO_SERVER );
+    public final DirectionData TO_CLIENT = new DirectionData(this, ProtocolConstants.Direction.TO_CLIENT );
 
     @RequiredArgsConstructor
     private static class ProtocolData {
@@ -243,6 +244,7 @@ public enum Protocol
     public static class DirectionData
     {
 
+        private final Protocol protocolPhase;
         private final TIntObjectMap<ProtocolData> protocols = new TIntObjectHashMap<>();
         {
             for ( int protocol : ProtocolConstants.SUPPORTED_VERSION_IDS )
@@ -254,24 +256,34 @@ public enum Protocol
         {
             linkedProtocols.put( ProtocolConstants.MINECRAFT_1_8, Arrays.asList(
                     ProtocolConstants.MINECRAFT_1_9
-            ));
-            linkedProtocols.put( ProtocolConstants.MINECRAFT_1_9, Arrays.asList(ProtocolConstants.MINECRAFT_1_9_1,
-                ProtocolConstants.MINECRAFT_1_9_2,
-                ProtocolConstants.MINECRAFT_1_9_4,
-                ProtocolConstants.MINECRAFT_1_10
-
-            ));
+            ) );
+            linkedProtocols.put( ProtocolConstants.MINECRAFT_1_9, Arrays.asList(
+                    ProtocolConstants.MINECRAFT_1_9_1,
+                    ProtocolConstants.MINECRAFT_1_9_2,
+                    ProtocolConstants.MINECRAFT_1_9_4,
+                    ProtocolConstants.MINECRAFT_1_10
+            ) );
         }
 
         @Getter
         private final ProtocolConstants.Direction direction;
 
-        public final DefinedPacket createPacket(int id, int protocol)
+        private ProtocolData getProtocolData(int version)
         {
-            ProtocolData protocolData = protocols.get( protocol );
+            ProtocolData protocol = protocols.get( version );
+            if ( protocol == null && ( protocolPhase != Protocol.GAME ) )
+            {
+                protocol = Iterables.getFirst( protocols.valueCollection(), null );
+            }
+            return protocol;
+        }
+
+        public final DefinedPacket createPacket(int id, int version)
+        {
+            ProtocolData protocolData = getProtocolData( version );
             if (protocolData == null)
             {
-                throw new BadPacketException( "Unsupported protocol" );
+                throw new BadPacketException( "Unsupported protocol version" );
             }
             if ( id > MAX_PACKET_ID )
             {
@@ -322,13 +334,13 @@ public enum Protocol
             }
         }
 
-        final int getId(Class<? extends DefinedPacket> packet, int protocol)
+        final int getId(Class<? extends DefinedPacket> packet, int version)
         {
 
-            ProtocolData protocolData = protocols.get( protocol );
+            ProtocolData protocolData = getProtocolData( version );
             if (protocolData == null)
             {
-                throw new BadPacketException( "Unsupported protocol" );
+                throw new BadPacketException( "Unsupported protocol version" );
             }
             Preconditions.checkArgument( protocolData.packetMap.containsKey( packet ), "Cannot get ID for packet " + packet );
 

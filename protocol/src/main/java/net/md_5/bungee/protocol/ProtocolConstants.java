@@ -17,7 +17,7 @@ public class ProtocolConstants
             "1.9.x",
             "1.10.x"
     );
-    public static final List<Integer> SUPPORTED_VERSION_IDS = Arrays.asList(ProtocolConstants.MINECRAFT_1_8,
+    public static final List<Integer> SUPPORTED_VERSION_IDS = Arrays.asList( ProtocolConstants.MINECRAFT_1_8,
             ProtocolConstants.MINECRAFT_1_9,
             ProtocolConstants.MINECRAFT_1_9_1,
             ProtocolConstants.MINECRAFT_1_9_2,
