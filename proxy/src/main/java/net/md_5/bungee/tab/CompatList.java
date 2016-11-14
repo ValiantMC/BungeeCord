@@ -22,6 +22,7 @@ public class CompatList extends TabList {
 
     @Override
     public void onUpdate(PlayerListItem playerListItem) {
+        if(this.name.equals("") || this.name.equals(" ")) return;
         sendGM();
         if (playerListItem.getAction() == PlayerListItem.Action.UPDATE_GAMEMODE) {
             for (PlayerListItem.Item i : playerListItem.getItems()) {
@@ -39,6 +40,7 @@ public class CompatList extends TabList {
     }
 
     public void sendGM() {
+        if(this.name.equals("") || this.name.equals(" ")) return;
         for (ProxiedPlayer p : BungeeCord.getInstance().getPlayers()) {
             if (!p.getUUID().equals(this.player.getUUID())) {
                 PlayerListItem packet = new PlayerListItem();
@@ -76,6 +78,7 @@ public class CompatList extends TabList {
     public void onConnect() {
         this.sentPing = false;
         this.name = player.getDisplayName();
+        if(this.name.equals("") || this.name.equals(" ")) return;
         PlayerListItem playerListItem = new PlayerListItem();
         playerListItem.setAction(PlayerListItem.Action.ADD_PLAYER);
         Collection<ProxiedPlayer> players = BungeeCord.getInstance().getPlayers();
@@ -83,6 +86,7 @@ public class CompatList extends TabList {
         playerListItem.setItems(items);
         int i = 0;
         for (ProxiedPlayer p : players) {
+            if(p == null) continue;
             PlayerListItem.Item item = items[i++] = new PlayerListItem.Item();
             item.setUuid(p.getUniqueId());
             item.setUsername(p.getName());
@@ -133,6 +137,7 @@ public class CompatList extends TabList {
             }
         }
         for (ProxiedPlayer p : BungeeCord.getInstance().getPlayers()) {
+            if(p == null) continue;
             PlayerListItem packet = new PlayerListItem();
             packet.setAction(PlayerListItem.Action.ADD_PLAYER);
             if (this.name.equals("") || this.name.equals(" ")) continue;
@@ -173,7 +178,10 @@ public class CompatList extends TabList {
 
     @Override
     public void onDisconnect() {
+        if(this.name.equals("") || this.name.equals(" ")) return;
+
         for (ProxiedPlayer p : BungeeCord.getInstance().getPlayers()) {
+            if(p == null) continue;
             PlayerListItem packet = new PlayerListItem();
             packet.setAction(PlayerListItem.Action.REMOVE_PLAYER);
             PlayerListItem.Item item = new PlayerListItem.Item();
