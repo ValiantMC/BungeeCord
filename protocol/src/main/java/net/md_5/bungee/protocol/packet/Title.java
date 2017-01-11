@@ -28,17 +28,20 @@ public class Title extends DefinedPacket
     @Override
     public void read(ByteBuf buf, ProtocolConstants.Direction direction, int protocolVersion)
     {
-        if (protocolVersion >= ProtocolConstants.MINECRAFT_1_11_SNAP) {
-            int x = readVarInt(buf);
-            if(x >= 2) x = x - 1; // action becomes subtitle
-            action = Action.values()[x];
-        } else {
-            action = Action.values()[readVarInt(buf)];
+        int index = readVarInt( buf );
+
+        // If we're working on 1.10 or lower, increment the value of the index so we pull out the correct value.
+        if ( protocolVersion <= ProtocolConstants.MINECRAFT_1_10 && index >= 2 )
+        {
+            index++;
         }
+
+        action = Action.values()[index];
         switch ( action )
         {
             case TITLE:
             case SUBTITLE:
+            case ACTIONBAR:
                 text = readString( buf );
                 break;
             case TIMES:
@@ -52,20 +55,20 @@ public class Title extends DefinedPacket
     @Override
     public void write(ByteBuf buf, ProtocolConstants.Direction direction, int protocolVersion)
     {
-        if (protocolVersion >= ProtocolConstants.MINECRAFT_1_11_SNAP) {
-            if(action.ordinal() >= 2) {
-                writeVarInt(action.ordinal() + 1, buf);
-            } else{
-                writeVarInt(action.ordinal(), buf);
-            }
-        } else {
-            writeVarInt( action.ordinal(), buf );
+        int index = action.ordinal();
+
+        // If we're working on 1.10 or lower, increment the value of the index so we pull out the correct value.
+        if ( protocolVersion <= ProtocolConstants.MINECRAFT_1_10 && index >= 2 )
+        {
+            index--;
         }
 
+        writeVarInt( index, buf );
         switch ( action )
         {
             case TITLE:
             case SUBTITLE:
+            case ACTIONBAR:
                 writeString( text, buf );
                 break;
             case TIMES:
@@ -87,6 +90,7 @@ public class Title extends DefinedPacket
 
         TITLE,
         SUBTITLE,
+        ACTIONBAR,
         TIMES,
         CLEAR,
         RESET
