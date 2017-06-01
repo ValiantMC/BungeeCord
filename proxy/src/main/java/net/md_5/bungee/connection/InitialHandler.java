@@ -12,8 +12,13 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import javax.crypto.SecretKey;
+
+import io.netty.util.concurrent.Future;
+import io.netty.util.concurrent.GenericFutureListener;
+import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.BungeeServerInfo;
 import net.md_5.bungee.EncryptionUtil;
@@ -96,6 +101,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
     @Getter
     private UUID offlineId;
     @Getter
+    @Setter
     private LoginResult loginProfile;
     @Getter
     private boolean legacy;
@@ -444,14 +450,31 @@ public class InitialHandler extends PacketHandler implements PendingConnection
             if ( oldName != null )
             {
                 // TODO See #1218
-                oldName.disconnect( bungee.getTranslation( "already_connected_proxy" ) );
+                // Wait for disconnect :P
+                oldName.disconnect(bungee.getTranslation( "already_connected_proxy" ));
+                ch.getHandle().eventLoop().schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        finish();
+                    }
+                }, 100, TimeUnit.MILLISECONDS);
+                return;
+
             }
             // And then also for their old UUID
             ProxiedPlayer oldID = bungee.getPlayer( getUniqueId() );
             if ( oldID != null )
             {
                 // TODO See #1218
-                oldID.disconnect( bungee.getTranslation( "already_connected_proxy" ) );
+                // Wait for disconnect
+                oldName.disconnect(bungee.getTranslation( "already_connected_proxy" ));
+                ch.getHandle().eventLoop().schedule(new Runnable() {
+                    @Override
+                    public void run() {
+                        finish();
+                    }
+                }, 100, TimeUnit.MILLISECONDS);
+                return;
             }
         } else
         {
