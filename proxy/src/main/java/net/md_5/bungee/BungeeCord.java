@@ -125,6 +125,7 @@ public class BungeeCord extends ProxyServer
     private final Map<String, UserConnection> connections = new CaseInsensitiveMap<>();
     // Used to help with packet rewriting
     private final Map<UUID, UserConnection> connectionsByOfflineUUID = new HashMap<>();
+    private final Map<UUID, UserConnection> connectionsByUUID = new HashMap<>();
     private final ReadWriteLock connectionLock = new ReentrantReadWriteLock();
     /**
      * Plugin manager.
@@ -391,6 +392,13 @@ public class BungeeCord extends ProxyServer
                     connectionLock.readLock().unlock();
                 }
 
+                try
+                {
+                    Thread.sleep( 500 );
+                } catch ( InterruptedException ex )
+                {
+                }
+
                 getLogger().info( "Closing IO threads" );
                 eventLoops.shutdownGracefully();
                 try
@@ -535,15 +543,7 @@ public class BungeeCord extends ProxyServer
         connectionLock.readLock().lock();
         try
         {
-            for ( ProxiedPlayer proxiedPlayer : connections.values() )
-            {
-                if ( proxiedPlayer.getUniqueId().equals( uuid ) )
-                {
-                    return proxiedPlayer;
-                }
-            }
-
-            return null;
+            return connectionsByUUID.get( uuid );
         } finally
         {
             connectionLock.readLock().unlock();
@@ -638,6 +638,7 @@ public class BungeeCord extends ProxyServer
         try
         {
             connections.put( con.getName(), con );
+            connectionsByUUID.put( con.getUniqueId(), con );
             connectionsByOfflineUUID.put( con.getPendingConnection().getOfflineId(), con );
         } finally
         {
@@ -654,6 +655,7 @@ public class BungeeCord extends ProxyServer
             if ( connections.get( con.getName() ) == con )
             {
                 connections.remove( con.getName() );
+                connectionsByUUID.remove( con.getUniqueId() );
                 connectionsByOfflineUUID.remove( con.getPendingConnection().getOfflineId() );
             }
         } finally

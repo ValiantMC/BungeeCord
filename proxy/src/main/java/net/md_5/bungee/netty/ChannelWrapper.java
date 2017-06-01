@@ -1,8 +1,10 @@
 package net.md_5.bungee.netty;
 
 import com.google.common.base.Preconditions;
-import io.netty.channel.*;
-
+import io.netty.channel.Channel;
+import io.netty.channel.ChannelFutureListener;
+import io.netty.channel.ChannelHandler;
+import io.netty.channel.ChannelHandlerContext;
 import java.util.concurrent.TimeUnit;
 import lombok.Getter;
 import net.md_5.bungee.compress.PacketCompressor;
@@ -11,6 +13,7 @@ import net.md_5.bungee.protocol.MinecraftDecoder;
 import net.md_5.bungee.protocol.MinecraftEncoder;
 import net.md_5.bungee.protocol.PacketWrapper;
 import net.md_5.bungee.protocol.Protocol;
+import net.md_5.bungee.protocol.packet.Kick;
 
 public class ChannelWrapper
 {
@@ -54,42 +57,59 @@ public class ChannelWrapper
         }
     }
 
+    public void markClosed()
+    {
+        closed = closing = true;
+    }
+
     public void close()
+    {
+        close( null );
+    }
+
+    public void close(Object packet)
     {
         if ( !closed )
         {
             closed = closing = true;
-            ch.flush();
-            ch.close();
+
+            if ( packet != null && ch.isActive() )
+            {
+                ch.writeAndFlush( packet ).addListeners( ChannelFutureListener.FIRE_EXCEPTION_ON_FAILURE, ChannelFutureListener.CLOSE );
+                ch.eventLoop().schedule( new Runnable()
+                {
+                    @Override
+                    public void run()
+                    {
+                        ch.close();
+                    }
+                }, 250, TimeUnit.MILLISECONDS );
+            } else
+            {
+                ch.flush();
+                ch.close();
+            }
         }
     }
 
-    public void delayedClose(final Runnable runnable)
+    public void delayedClose(final Kick kick)
     {
-        Preconditions.checkArgument( runnable != null, "runnable" );
-
         if ( !closing )
         {
             closing = true;
 
             // Minecraft client can take some time to switch protocols.
             // Sending the wrong disconnect packet whilst a protocol switch is in progress will crash it.
-            // Delay 500ms to ensure that the protocol switch (if any) has definitely taken place.
+            // Delay 250ms to ensure that the protocol switch (if any) has definitely taken place.
             ch.eventLoop().schedule( new Runnable()
             {
 
                 @Override
                 public void run()
                 {
-                    try
-                    {
-                        runnable.run();
-                    } finally
-                    {
-                        ChannelWrapper.this.close();
-                    }
+                    close( kick );
                 }
-            }, 500, TimeUnit.MILLISECONDS );
+            }, 250, TimeUnit.MILLISECONDS );
         }
     }
 
@@ -116,9 +136,7 @@ public class ChannelWrapper
             ch.pipeline().get( PacketCompressor.class ).setThreshold( compressionThreshold );
         } else
         {
-            if( ch.pipeline().get( PacketCompressor.class ) != null ) {
-                ch.pipeline().remove( "compress" );
-            }
+            ch.pipeline().remove( "compress" );
         }
 
         if ( ch.pipeline().get( PacketDecompressor.class ) == null && compressionThreshold != -1 )
@@ -127,9 +145,7 @@ public class ChannelWrapper
         }
         if ( compressionThreshold == -1 )
         {
-            if( ch.pipeline().get( PacketDecompressor.class ) != null ) {
-                ch.pipeline().remove("decompress");
-            }
+            ch.pipeline().remove( "decompress" );
         }
     }
 }
