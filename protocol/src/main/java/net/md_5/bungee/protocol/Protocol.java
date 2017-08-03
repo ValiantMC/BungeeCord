@@ -66,7 +66,8 @@ public enum Protocol
                     ResourcePackSend.class,
                     map( ProtocolConstants.MINECRAFT_1_8, 0x48 ),
                     map( ProtocolConstants.MINECRAFT_1_9, 0x32 ),
-                    map( ProtocolConstants.MINECRAFT_1_12, 0x33 )
+                    map( ProtocolConstants.MINECRAFT_1_12, 0x33 ),
+                    map( ProtocolConstants.MINECRAFT_1_12_1, 0x34 )
             );
             TO_CLIENT.registerPacket(
                     PlayerListItem.class, // PlayerInfo
