@@ -37,7 +37,9 @@ public class CompatList extends TabList {
 
     @Override
     public void onUpdate(PlayerListItem playerListItem) {
-        if (this.name.equals("") || this.name.equals(" ")) return;
+        if (this.name != null) {
+            if (this.name.equals("") || this.name.equals(" ")) return;
+        }
         sendGM();
         if (playerListItem.getAction() == PlayerListItem.Action.UPDATE_GAMEMODE) {
             for (PlayerListItem.Item i : playerListItem.getItems()) {
@@ -55,7 +57,9 @@ public class CompatList extends TabList {
     }
 
     public void sendGM() {
-        if (this.name.equals("") || this.name.equals(" ")) return;
+        if (this.name != null) {
+            if (this.name.equals("") || this.name.equals(" ")) return;
+        }
         for (ProxiedPlayer p : BungeeCord.getInstance().getPlayers()) {
             if (!p.getUUID().equals(this.player.getUUID())) {
                 PlayerListItem packet = new PlayerListItem();
@@ -155,7 +159,9 @@ public class CompatList extends TabList {
             if (p == null) continue;
             PlayerListItem packet = new PlayerListItem();
             packet.setAction(PlayerListItem.Action.ADD_PLAYER);
-            if (this.name.equals("") || this.name.equals(" ")) continue;
+            if (this.name != null) {
+                if (this.name.equals("") || this.name.equals(" ")) continue;
+            }
             PlayerListItem.Item item = new PlayerListItem.Item();
             item.setUuid(player.getUniqueId());
             item.setUsername(player.getName());
@@ -193,7 +199,9 @@ public class CompatList extends TabList {
 
     @Override
     public void onDisconnect() {
-        if (this.name.equals("") || this.name.equals(" ")) return;
+        if (this.name != null) {
+            if (this.name.equals("") || this.name.equals(" ")) return;
+        }
 
         for (ProxiedPlayer p : BungeeCord.getInstance().getPlayers()) {
             if (p == null) continue;
