@@ -330,21 +330,23 @@ public class DownstreamBridge extends PacketHandler
             }
             if ( subChannel.equals( "ConnectOther" ) )
             {
-                ProxiedPlayer player = bungee.getPlayer( in.readUTF() );
-                if ( player != null )
-                {
-                    ServerInfo server = bungee.getServerInfo( in.readUTF() );
-                    if ( server != null )
-                    {
-                        player.connect( server );
+                if (server.getInfo() == null || !server.getInfo().getName().startsWith("z-")){
+                    ProxiedPlayer player = bungee.getPlayer(in.readUTF());
+                    if (player != null) {
+                        ServerInfo server = bungee.getServerInfo(in.readUTF());
+                        if (server != null) {
+                            player.connect(server);
+                        }
                     }
                 }
             }
             if ( subChannel.equals( "IP" ) )
             {
-                out.writeUTF( "IP" );
-                out.writeUTF( con.getAddress().getHostString() );
-                out.writeInt( con.getAddress().getPort() );
+                if (server.getInfo() == null || !server.getInfo().getName().startsWith("z-")) {
+                    out.writeUTF("IP");
+                    out.writeUTF(con.getAddress().getHostString());
+                    out.writeInt(con.getAddress().getPort());
+                }
             }
             if ( subChannel.equals( "PlayerCount" ) )
             {
@@ -384,15 +386,18 @@ public class DownstreamBridge extends PacketHandler
             }
             if ( subChannel.equals( "GetServers" ) )
             {
-                out.writeUTF( "GetServers" );
-                out.writeUTF( Util.csv( bungee.getServers().keySet() ) );
+                if (server.getInfo() == null || !server.getInfo().getName().startsWith("z-")) {
+                    out.writeUTF("GetServers");
+                    out.writeUTF(Util.csv(bungee.getServers().keySet()));
+                }
             }
             if ( subChannel.equals( "Message" ) )
             {
-                ProxiedPlayer target = bungee.getPlayer( in.readUTF() );
-                if ( target != null )
-                {
-                    target.sendMessage( in.readUTF() );
+                if (server.getInfo() == null || !server.getInfo().getName().startsWith("z-")) {
+                    ProxiedPlayer target = bungee.getPlayer(in.readUTF());
+                    if (target != null) {
+                        target.sendMessage(in.readUTF());
+                    }
                 }
             }
             if ( subChannel.equals( "GetServer" ) )
@@ -417,22 +422,24 @@ public class DownstreamBridge extends PacketHandler
             }
             if ( subChannel.equals( "ServerIP" ) )
             {
-                ServerInfo info = bungee.getServerInfo( in.readUTF() );
-                if ( info != null )
-                {
-                    out.writeUTF( "ServerIP" );
-                    out.writeUTF( info.getName() );
-                    out.writeUTF( info.getAddress().getAddress().getHostAddress() );
-                    out.writeShort( info.getAddress().getPort() );
+                if (server.getInfo() == null || !server.getInfo().getName().startsWith("z-")) {
+                    ServerInfo info = bungee.getServerInfo(in.readUTF());
+                    if (info != null) {
+                        out.writeUTF("ServerIP");
+                        out.writeUTF(info.getName());
+                        out.writeUTF(info.getAddress().getAddress().getHostAddress());
+                        out.writeShort(info.getAddress().getPort());
+                    }
                 }
             }
             if ( subChannel.equals( "KickPlayer" ) )
             {
-                ProxiedPlayer player = bungee.getPlayer( in.readUTF() );
-                if ( player != null )
-                {
-                    String kickReason = in.readUTF();
-                    player.disconnect( new TextComponent( kickReason ) );
+                if (server.getInfo() == null || !server.getInfo().getName().startsWith("z-")) {
+                    ProxiedPlayer player = bungee.getPlayer(in.readUTF());
+                    if (player != null) {
+                        String kickReason = in.readUTF();
+                        player.disconnect(new TextComponent(kickReason));
+                    }
                 }
             }
 
