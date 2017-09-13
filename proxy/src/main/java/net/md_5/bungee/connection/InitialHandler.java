@@ -190,8 +190,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
                             + '\u00a7' + legacy.getPlayers().getMax();
                 }
 
-                ch.getHandle().writeAndFlush( kickMessage );
-                ch.close();
+                ch.close( kickMessage );
             }
         };
 
@@ -585,7 +584,7 @@ public class InitialHandler extends PacketHandler implements PendingConnection
     @Override
     public String getName()
     {
-        return (name != null ) ? name : ( loginRequest == null ) ? null : loginRequest.getData();
+        return ( name != null ) ? name : ( loginRequest == null ) ? null : loginRequest.getData();
     }
 
     @Override
