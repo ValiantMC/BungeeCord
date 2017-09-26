@@ -58,6 +58,7 @@ import net.md_5.bungee.protocol.packet.PlayerListHeaderFooter;
 import net.md_5.bungee.protocol.packet.PluginMessage;
 import net.md_5.bungee.protocol.packet.Respawn;
 import net.md_5.bungee.protocol.packet.SetCompression;
+import net.md_5.bungee.tab.CompatList;
 import net.md_5.bungee.tab.ServerUnique;
 import net.md_5.bungee.tab.TabList;
 import net.md_5.bungee.util.CaseInsensitiveSet;
@@ -89,6 +90,9 @@ public final class UserConnection implements ProxiedPlayer
     @Getter
     private final Collection<ServerInfo> pendingConnects = new HashSet<>();
     /*========================================================================*/
+    @Getter
+    @Setter
+    private Long sentPingId;
     @Getter
     @Setter
     private long sentPingTime;
@@ -167,7 +171,7 @@ public final class UserConnection implements ProxiedPlayer
                 break;
         }
          */
-        tabListHandler = new ServerUnique( this );
+        tabListHandler = new CompatList( this );
 
         Collection<String> g = bungee.getConfigurationAdapter().getGroups( name );
         g.addAll( bungee.getConfigurationAdapter().getGroups( getUniqueId().toString() ) );
@@ -196,8 +200,10 @@ public final class UserConnection implements ProxiedPlayer
     @Override
     public void setDisplayName(String name)
     {
+        getTabListHandler().onDisconnect();
         Preconditions.checkNotNull( name, "displayName" );
         displayName = name;
+        getTabListHandler().onConnect();
     }
 
     @Override
