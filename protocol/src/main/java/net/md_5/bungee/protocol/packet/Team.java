@@ -98,8 +98,8 @@ public class Team extends DefinedPacket {
 
             if (protocolVersion >= ProtocolConstants.MINECRAFT_1_13) {
                 if (!prefix.startsWith("{") || !suffix.startsWith("{")) {
-                    color = getLastColor(prefix);
-                    writeVarInt(color, buf);
+                    int colour = getLastColor(prefix);
+                    writeVarInt(colour, buf);
                     writeString(ComponentSerializer.toString(fromLegacyText(prefix, ChatColor.WHITE)), buf);
                     writeString(ComponentSerializer.toString(fromLegacyText(suffix, ChatColor.WHITE)), buf);
                 } else {
